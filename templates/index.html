@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบประมวลผลใบสมัครงาน AI - หาตำแหน่งที่เหมาะสม</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .input-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .input-section h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        .file-upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            background: #f8f9fa;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 15px;
+        }
+
+        .file-upload-area:hover {
+            background: #e9ecef;
+            border-color: #764ba2;
+        }
+
+        .file-upload-area.dragover {
+            background: #e7f3ff;
+            border-color: #667eea;
+        }
+
+        .file-upload-area input[type="file"] {
+            display: none;
+        }
+
+        .file-upload-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+
+        .file-name {
+            margin-top: 10px;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .input-section textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: inherit;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+
+        .input-section textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn-analyze {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 15px;
+        }
+
+        .btn-analyze:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-analyze:active {
+            transform: translateY(0);
+        }
+
+        .btn-analyze:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            display: none;
+        }
+
+        .result-section.show {
+            display: block;
+        }
+
+        .result-section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .best-match {
+            background: linear-gradient(135deg, #51cf66 0%, #40c057 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+
+        .best-match h3 {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+        }
+
+        .best-match .position-title {
+            font-size: 1.3em;
+            margin-bottom: 10px;
+        }
+
+        .best-match .match-score {
+            font-size: 3em;
+            font-weight: bold;
+            margin: 15px 0;
+        }
+
+        .position-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+            transition: transform 0.2s;
+        }
+
+        .position-card:hover {
+            transform: translateX(5px);
+        }
+
+        .position-card.best {
+            border-left-color: #51cf66;
+            background: #f0f9f4;
+        }
+
+        .position-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .position-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .position-match {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .result-item {
+            margin-bottom: 15px;
+            padding: 12px;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .result-item h4 {
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 1em;
+        }
+
+        .result-item p {
+            color: #666;
+            line-height: 1.6;
+            font-size: 0.9em;
+        }
+
+        .skills-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .skill-tag {
+            background: #667eea;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.85em;
+        }
+
+        .skill-gap-tag {
+            background: #ff6b6b;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.85em;
+        }
+
+        .strength-tag {
+            background: #51cf66;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.85em;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            background: white;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .progress-container {
+            margin-top: 20px;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            background: #e0e0e0;
+            border-radius: 10px;
+            height: 30px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            color: #333;
+            font-size: 0.9em;
+        }
+
+        .estimated-time {
+            background: #e7f3ff;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .error {
+            background: #ff6b6b;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .suitable-count {
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            color: #667eea;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 ระบบประมวลผลใบสมัครงาน AI</h1>
+            <p>อัปโหลด Resume เพื่อหาตำแหน่งงานที่เหมาะสมที่สุด</p>
+        </div>
+
+        <div class="input-section">
+            <h2>📄 อัปโหลด Resume (PDF)</h2>
+            <div class="file-upload-area" id="uploadArea" onclick="document.getElementById('pdfFile').click()">
+                <div class="file-upload-icon">📎</div>
+                <p>คลิกเพื่อเลือกไฟล์ PDF หรือลากไฟล์มาวางที่นี่</p>
+                <p style="font-size: 0.9em; color: #666; margin-top: 10px;">รองรับไฟล์ PDF เท่านั้น</p>
+                <div class="file-name" id="fileName" style="display: none;"></div>
+            </div>
+            <input type="file" id="pdfFile" accept=".pdf" onchange="handleFileSelect(event)">
+            
+            <div style="margin-top: 20px; display: none;">
+                <h3 style="color: #667eea; margin-bottom: 10px;">หรือวางข้อความ Resume ที่นี่:</h3>
+                <textarea id="resumeInput" placeholder="วางข้อความ Resume ที่นี่..."></textarea>
+            </div>
+        </div>
+
+        <div class="input-section">
+            <div class="info-box">
+                <strong>💡 ข้อมูล:</strong> ระบบจะวิเคราะห์ Resume ของคุณกับตำแหน่งงานต่างๆ อัตโนมัติ และแสดงเฉพาะตำแหน่งที่เหมาะสม (ความเหมาะสม ≥ 40%)
+            </div>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button class="btn-analyze" id="analyzeBtn" onclick="analyzeAuto()">🔍 หาตำแหน่งงานที่เหมาะสม</button>
+                <button class="btn-analyze" id="uploadAnalyzeBtn" onclick="uploadAndAnalyze()" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                    📄 อัปโหลด PDF และวิเคราะห์
+                </button>
+            </div>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 15px; color: #667eea; font-weight: bold; font-size: 1.1em;">กำลังวิเคราะห์กับตำแหน่งงานต่างๆ...</p>
+            <div class="progress-container">
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="progressBar" style="width: 0%;">0%</div>
+                </div>
+                <div class="progress-info">
+                    <span id="progressText">กำลังเริ่มต้น...</span>
+                    <span id="progressCount">0 / 0</span>
+                </div>
+                <div class="estimated-time" id="estimatedTime">
+                    ⏱️ เวลาที่คาดว่าจะใช้: กำลังคำนวณ...
+                </div>
+            </div>
+        </div>
+
+        <div class="error" id="error"></div>
+
+        <div class="result-section" id="resultSection">
+            <h2>📊 ผลการวิเคราะห์</h2>
+            
+            <div id="bestMatchSection"></div>
+            <div id="suitableCountSection"></div>
+            <div id="suitablePositionsSection"></div>
+        </div>
+    </div>
+
+    <script>
+        let resumeText = '';
+
+        // Handle file upload
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (!file.name.toLowerCase().endsWith('.pdf')) {
+                alert('กรุณาเลือกไฟล์ PDF เท่านั้น');
+                return;
+            }
+
+            document.getElementById('fileName').textContent = file.name;
+            document.getElementById('fileName').style.display = 'block';
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            fetch('/api/upload-pdf', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    resumeText = data.resume_text;
+                    document.getElementById('resumeInput').value = data.resume_text;
+                } else {
+                    alert('เกิดข้อผิดพลาด: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('เกิดข้อผิดพลาดในการอ่านไฟล์ PDF');
+            });
+        }
+
+        // Drag and drop
+        const uploadArea = document.getElementById('uploadArea');
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file && file.name.toLowerCase().endsWith('.pdf')) {
+                document.getElementById('pdfFile').files = e.dataTransfer.files;
+                handleFileSelect({ target: { files: [file] } });
+            }
+        });
+
+        let progressInterval = null;
+        let startTime = null;
+        let initialEstimatedTime = null; // เก็บเวลาเริ่มต้นไว้สำหรับ countdown
+
+        // Auto analyze
+        async function analyzeAuto() {
+            const resume = document.getElementById('resumeInput').value.trim() || resumeText;
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+            const resultSection = document.getElementById('resultSection');
+
+            // Reset
+            error.classList.remove('show');
+            resultSection.classList.remove('show');
+
+            // Validation
+            if (!resume) {
+                error.textContent = 'กรุณาอัปโหลดไฟล์ PDF หรือใส่ข้อความ Resume';
+                error.classList.add('show');
+                return;
+            }
+
+            // Show loading
+            analyzeBtn.disabled = true;
+            loading.classList.add('show');
+            startTime = Date.now();
+            initialEstimatedTime = null; // Reset initial estimated time
+
+            // Reset progress
+            document.getElementById('progressBar').style.width = '0%';
+            document.getElementById('progressBar').textContent = '0%';
+            document.getElementById('progressText').textContent = 'กำลังเริ่มต้น...';
+            document.getElementById('progressCount').textContent = '0 / 10';
+            
+            // เริ่ม polling progress
+            progressInterval = setInterval(updateProgress, 1000);
+
+            // เริ่มการวิเคราะห์ (async)
+            fetch('/api/analyze-auto', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    resume: resume
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                clearInterval(progressInterval);
+                
+                if (!data.error) {
+                    // Display results
+                    displayAutoResults(data);
+                } else {
+                    throw new Error(data.error || 'เกิดข้อผิดพลาด');
+                }
+            })
+            .catch(err => {
+                clearInterval(progressInterval);
+                error.textContent = err.message || 'เกิดข้อผิดพลาดในการวิเคราะห์';
+                error.classList.add('show');
+            })
+            .finally(() => {
+                analyzeBtn.disabled = false;
+                loading.classList.remove('show');
+            });
+        }
+
+        // ฟังก์ชันใหม่: อัปโหลด PDF และวิเคราะห์ในครั้งเดียว
+        async function uploadAndAnalyze() {
+            const fileInput = document.getElementById('pdfFile');
+            const file = fileInput.files[0];
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+            const resultSection = document.getElementById('resultSection');
+
+            // Reset
+            error.classList.remove('show');
+            resultSection.classList.remove('show');
+
+            // Validation
+            if (!file) {
+                error.textContent = 'กรุณาเลือกไฟล์ PDF';
+                error.classList.add('show');
+                return;
+            }
+
+            if (!file.name.toLowerCase().endsWith('.pdf')) {
+                error.textContent = 'ไฟล์ต้องเป็น PDF เท่านั้น';
+                error.classList.add('show');
+                return;
+            }
+
+            // Show loading
+            analyzeBtn.disabled = true;
+            loading.classList.add('show');
+            startTime = Date.now();
+            initialEstimatedTime = null;
+
+            // Reset progress
+            document.getElementById('progressBar').style.width = '0%';
+            document.getElementById('progressBar').textContent = '0%';
+            document.getElementById('progressText').textContent = 'กำลังอัปโหลดและวิเคราะห์...';
+            document.getElementById('progressCount').textContent = '0 / 3';
+            
+            // เริ่ม polling progress
+            progressInterval = setInterval(updateProgress, 1000);
+
+            // สร้าง FormData
+            const formData = new FormData();
+            formData.append('file', file);
+
+            // เรียก API upload-and-analyze
+            fetch('/api/upload-and-analyze', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                clearInterval(progressInterval);
+                
+                if (data.success && !data.error) {
+                    // อัปเดต resumeText และ textarea
+                    resumeText = data.resume_preview;
+                    document.getElementById('resumeInput').value = data.resume_preview;
+                    document.getElementById('fileName').textContent = data.filename || file.name;
+                    document.getElementById('fileName').style.display = 'block';
+                    
+                    // Display results
+                    displayAutoResults(data);
+                } else {
+                    throw new Error(data.error || 'เกิดข้อผิดพลาด');
+                }
+            })
+            .catch(err => {
+                clearInterval(progressInterval);
+                error.textContent = err.message || 'เกิดข้อผิดพลาดในการอัปโหลดและวิเคราะห์';
+                error.classList.add('show');
+            })
+            .finally(() => {
+                analyzeBtn.disabled = false;
+                loading.classList.remove('show');
+            });
+        }
+
+        async function updateProgress() {
+            try {
+                const response = await fetch('/api/progress');
+                const data = await response.json();
+                
+                const progress = data.progress || 0;
+                const current = data.current || 0;
+                const total = data.total || 3;
+                const currentJob = data.current_job || '';
+                
+                // Update progress bar
+                document.getElementById('progressBar').style.width = progress + '%';
+                document.getElementById('progressBar').textContent = progress + '%';
+                document.getElementById('progressCount').textContent = `${current} / ${total}`;
+                
+                if (currentJob) {
+                    document.getElementById('progressText').textContent = `กำลังวิเคราะห์: ${currentJob}`;
+                } else {
+                    document.getElementById('progressText').textContent = 'กำลังเริ่มต้น...';
+                }
+                
+                // Calculate estimated time (countdown - เริ่มสูงแล้วค่อยๆลดลง)
+                if (startTime) {
+                    // ตั้งค่าเวลาเริ่มต้น (ถ้ายังไม่ได้ตั้ง)
+                    if (initialEstimatedTime === null && total > 0) {
+                        initialEstimatedTime = total * 45; // 45 วินาทีต่อตำแหน่ง
+                    }
+                    
+                    if (initialEstimatedTime !== null) {
+                        const elapsed = (Date.now() - startTime) / 1000; // seconds
+                        const remaining = Math.max(0, Math.ceil(initialEstimatedTime - elapsed));
+                        
+                        if (remaining > 0) {
+                            const remainingMin = Math.floor(remaining / 60);
+                            const remainingSec = remaining % 60;
+                            document.getElementById('estimatedTime').textContent = 
+                                `⏱️ เหลืออีกประมาณ ${remainingMin} นาที ${remainingSec} วินาที`;
+                        } else {
+                            document.getElementById('estimatedTime').textContent = 
+                                `⏱️ กำลังเสร็จสิ้น...`;
+                        }
+                    } else {
+                        // Initial estimate: 45 seconds per position
+                        const totalEstimated = total * 45;
+                        const totalMin = Math.floor(totalEstimated / 60);
+                        const totalSec = totalEstimated % 60;
+                        document.getElementById('estimatedTime').textContent = 
+                            `⏱️ เวลาที่คาดว่าจะใช้: ประมาณ ${totalMin} นาที ${totalSec} วินาที`;
+                    }
+                } else {
+                    // Initial estimate: 45 seconds per position
+                    const totalEstimated = total * 45;
+                    const totalMin = Math.floor(totalEstimated / 60);
+                    const totalSec = totalEstimated % 60;
+                    document.getElementById('estimatedTime').textContent = 
+                        `⏱️ เวลาที่คาดว่าจะใช้: ประมาณ ${totalMin} นาที ${totalSec} วินาที`;
+                }
+            } catch (err) {
+                console.error('Error updating progress:', err);
+            }
+        }
+
+        // Helper function to convert array to readable text
+        function formatText(value) {
+            if (Array.isArray(value)) {
+                return value.join('. ') + '.';
+            }
+            return value || '';
+        }
+
+        // Helper function to ensure value is an array for .map()
+        function ensureArray(value) {
+            if (Array.isArray(value)) {
+                return value;
+            }
+            if (typeof value === 'string' && value) {
+                return [value];
+            }
+            return [];
+        }
+
+        function displayAutoResults(data) {
+            const bestMatchSection = document.getElementById('bestMatchSection');
+            const suitableCountSection = document.getElementById('suitableCountSection');
+            const suitablePositionsSection = document.getElementById('suitablePositionsSection');
+
+            // Clear previous results
+            bestMatchSection.innerHTML = '';
+            suitableCountSection.innerHTML = '';
+            suitablePositionsSection.innerHTML = '';
+
+            // Show count
+            if (data.total_suitable > 0) {
+                suitableCountSection.innerHTML = `
+                    <div class="suitable-count">
+                        ✅ พบตำแหน่งที่เหมาะสม ${data.total_suitable} ตำแหน่ง จากทั้งหมด ${data.total_analyzed} ตำแหน่ง
+                    </div>
+                `;
+            } else {
+                suitableCountSection.innerHTML = `
+                    <div class="suitable-count" style="color: #ff6b6b;">
+                        ⚠️ ไม่พบตำแหน่งที่เหมาะสม (ความเหมาะสม < 40%)
+                    </div>
+                `;
+            }
+
+            // Show best match
+            if (data.best_match) {
+                const best = data.best_match;
+                bestMatchSection.innerHTML = `
+                    <div class="best-match">
+                        <h3>⭐ ตำแหน่งที่เหมาะสมที่สุด</h3>
+                        <div class="position-title" style="font-size: 1.5em; margin: 15px 0;">${best.job_title}</div>
+                        <div class="match-score">${best.match_percentage}</div>
+                        <div style="margin-top: 15px;">
+                            <p><strong>📝 สรุป:</strong> ${formatText(best.summary) || 'ไม่มีข้อมูล'}</p>
+                            <p style="margin-top: 10px;"><strong>🎯 ทำไมเหมาะกับตำแหน่งนี้:</strong> ${formatText(best.why_suitable) || 'ไม่มีข้อมูล'}</p>
+                            <p style="margin-top: 10px;"><strong>💡 คำแนะนำ:</strong> ${formatText(best.recommendation) || 'ไม่มีคำแนะนำ'}</p>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Show suitable positions (แสดงเฉพาะชื่อตำแหน่งและผลการวิเคราะห์)
+            if (data.suitable_positions && data.suitable_positions.length > 0) {
+                suitablePositionsSection.innerHTML = '<h3 style="margin-top: 20px; margin-bottom: 15px; color: #667eea;">📋 ตำแหน่งที่เหมาะสม (เรียงตามความเหมาะสม)</h3>';
+                
+                data.suitable_positions.forEach((position, index) => {
+                    const isBest = index === 0;
+                    const card = document.createElement('div');
+                    card.className = `position-card ${isBest ? 'best' : ''}`;
+                    
+                    card.innerHTML = `
+                        <div class="position-header">
+                            <div class="position-title">${position.job_title}</div>
+                            <div class="position-match">${position.match_percentage}</div>
+                        </div>
+                        <div class="result-item">
+                            <h4>📝 สรุป</h4>
+                            <p>${formatText(position.summary) || 'ไม่มีข้อมูล'}</p>
+                        </div>
+                        <div class="result-item">
+                            <h4>🛠️ ทักษะที่ตรวจพบ</h4>
+                            <div class="skills-list">
+                                ${ensureArray(position.skills_detected).slice(0, 10).map(skill => 
+                                    `<span class="skill-tag">${skill}</span>`
+                                ).join('')}
+                            </div>
+                        </div>
+                        <div class="result-item">
+                            <h4>✅ จุดแข็ง</h4>
+                            <div class="skills-list">
+                                ${ensureArray(position.strengths).map(strength => 
+                                    `<span class="strength-tag">${strength}</span>`
+                                ).join('')}
+                            </div>
+                        </div>
+                        <div class="result-item">
+                            <h4>⚠️ ช่องว่างของทักษะ</h4>
+                            <div class="skills-list">
+                                ${ensureArray(position.skill_gaps).map(gap => 
+                                    `<span class="skill-gap-tag">${gap}</span>`
+                                ).join('')}
+                            </div>
+                        </div>
+                        <div class="result-item">
+                            <h4>🎯 ทำไมเหมาะกับตำแหน่งนี้</h4>
+                            <p>${formatText(position.why_suitable) || 'ไม่มีข้อมูล'}</p>
+                        </div>
+                        <div class="result-item">
+                            <h4>💡 คำแนะนำ</h4>
+                            <p>${formatText(position.recommendation) || 'ไม่มีคำแนะนำ'}</p>
+                        </div>
+                    `;
+                    
+                    suitablePositionsSection.appendChild(card);
+                });
+            } else if (data.all_positions && data.all_positions.length > 0) {
+                // ถ้าไม่มีตำแหน่งที่เหมาะสม แสดง 3 อันดับแรก
+                suitablePositionsSection.innerHTML = '<h3 style="margin-top: 20px; margin-bottom: 15px; color: #667eea;">📋 ตำแหน่งที่มีความเหมาะสมสูงสุด (3 อันดับแรก)</h3>';
+                
+                data.all_positions.slice(0, 3).forEach((position, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'position-card';
+                    
+                    card.innerHTML = `
+                        <div class="position-header">
+                            <div class="position-title">${position.job_title}</div>
+                            <div class="position-match">${position.match_percentage}</div>
+                        </div>
+                        <div class="result-item">
+                            <h4>💡 คำแนะนำ</h4>
+                            <p>${formatText(position.recommendation) || 'ไม่มีคำแนะนำ'}</p>
+                        </div>
+                    `;
+                    
+                    suitablePositionsSection.appendChild(card);
+                });
+            }
+
+            // Show result section
+            document.getElementById('resultSection').classList.add('show');
+            document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
