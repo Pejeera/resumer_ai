@@ -367,6 +367,85 @@
             color: #667eea;
             font-weight: bold;
         }
+
+        .personal-info {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+
+        .personal-info h3 {
+            font-size: 1.3em;
+            margin-bottom: 15px;
+        }
+
+        .personal-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .personal-info-item {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 12px;
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+        }
+
+        .personal-info-item strong {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .personal-info-item span {
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+
+        .model-selector {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .model-selector label {
+            display: block;
+            color: #667eea;
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 1em;
+        }
+
+        .model-selector select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            font-family: inherit;
+            background: white;
+            color: #333;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+
+        .model-selector select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .model-selector .model-info {
+            margin-top: 8px;
+            font-size: 0.85em;
+            color: #666;
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
@@ -377,14 +456,14 @@
         </div>
 
         <div class="input-section">
-            <h2>📄 อัปโหลด Resume (PDF)</h2>
+            <h2>📄 อัปโหลด Resume (PDF หรือ DOCX)</h2>
             <div class="file-upload-area" id="uploadArea" onclick="document.getElementById('pdfFile').click()">
                 <div class="file-upload-icon">📎</div>
-                <p>คลิกเพื่อเลือกไฟล์ PDF หรือลากไฟล์มาวางที่นี่</p>
-                <p style="font-size: 0.9em; color: #666; margin-top: 10px;">รองรับไฟล์ PDF เท่านั้น</p>
+                <p>คลิกเพื่อเลือกไฟล์ PDF หรือ DOCX หรือลากไฟล์มาวางที่นี่</p>
+                <p style="font-size: 0.9em; color: #666; margin-top: 10px;">รองรับไฟล์ PDF และ DOCX</p>
                 <div class="file-name" id="fileName" style="display: none;"></div>
             </div>
-            <input type="file" id="pdfFile" accept=".pdf" onchange="handleFileSelect(event)">
+            <input type="file" id="pdfFile" accept=".pdf,.docx" onchange="handleFileSelect(event)">
             
             <div style="margin-top: 20px; display: none;">
                 <h3 style="color: #667eea; margin-bottom: 10px;">หรือวางข้อความ Resume ที่นี่:</h3>
@@ -396,10 +475,21 @@
             <div class="info-box">
                 <strong>💡 ข้อมูล:</strong> ระบบจะวิเคราะห์ Resume ของคุณกับตำแหน่งงานต่างๆ อัตโนมัติ และแสดงเฉพาะตำแหน่งที่เหมาะสม (ความเหมาะสม ≥ 40%)
             </div>
+            <div class="model-selector">
+                <label for="modelSelect">🤖 เลือกโมเดล AI:</label>
+                <select id="modelSelect">
+                    <option value="llama-3.2-1b">Llama 3.2 1B (ค่าเริ่มต้น - เร็วที่สุด)</option>
+                    <option value="llama-3.2-latest">Llama 3.2 3B (เร็ว - แม่นยำปานกลาง)</option>
+                    <option value="llama-3.2-8b">Llama 3.1 8B (แม่นยำสูง - ช้ากว่า)</option>
+                    <option value="llama-3-8b">Llama 3 8B (แม่นยำสูง - ช้ากว่า)</option>
+                    <option value="gemma-3-4b">Gemma 3 4B (ทางเลือก - เร็ว)</option>
+                </select>
+                <div class="model-info" id="modelInfo">โมเดลที่เลือก: Llama 3.2 1B - รวดเร็ว เหมาะสำหรับการวิเคราะห์ทั่วไป</div>
+            </div>
             <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                 <button class="btn-analyze" id="analyzeBtn" onclick="analyzeAuto()">🔍 หาตำแหน่งงานที่เหมาะสม</button>
                 <button class="btn-analyze" id="uploadAnalyzeBtn" onclick="uploadAndAnalyze()" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                    📄 อัปโหลด PDF และวิเคราะห์
+                    📄 อัปโหลดไฟล์และวิเคราะห์
                 </button>
             </div>
         </div>
@@ -426,6 +516,7 @@
         <div class="result-section" id="resultSection">
             <h2>📊 ผลการวิเคราะห์</h2>
             
+            <div id="personalInfoSection"></div>
             <div id="bestMatchSection"></div>
             <div id="suitableCountSection"></div>
             <div id="suitablePositionsSection"></div>
@@ -435,13 +526,38 @@
     <script>
         let resumeText = '';
 
+        // Model selector change handler
+        document.getElementById('modelSelect').addEventListener('change', function() {
+            const selectedModel = this.value;
+            const modelInfo = document.getElementById('modelInfo');
+            
+            if (selectedModel === 'llama-3.2-1b') {
+                modelInfo.textContent = 'โมเดลที่เลือก: Llama 3.2 1B - รวดเร็วที่สุด เหมาะสำหรับการวิเคราะห์ทั่วไป';
+            } else if (selectedModel === 'llama-3.2-latest') {
+                modelInfo.textContent = 'โมเดลที่เลือก: Llama 3.2 3B - เร็ว แม่นยำปานกลาง เหมาะสำหรับการวิเคราะห์ที่ต้องการความสมดุล';
+            } else if (selectedModel === 'llama-3.2-8b') {
+                modelInfo.textContent = 'โมเดลที่เลือก: Llama 3.1 8B - แม่นยำสูง ใช้เวลานานกว่า เหมาะสำหรับการวิเคราะห์ที่ต้องการความละเอียด';
+            } else if (selectedModel === 'llama-3-8b') {
+                modelInfo.textContent = 'โมเดลที่เลือก: Llama 3 8B - แม่นยำสูง ใช้เวลานานกว่า เหมาะสำหรับการวิเคราะห์ที่ต้องการความละเอียด';
+            } else if (selectedModel === 'gemma-3-4b') {
+                modelInfo.textContent = 'โมเดลที่เลือก: Gemma 3 4B - ทางเลือกที่เร็ว แม่นยำดี เหมาะสำหรับการวิเคราะห์ทั่วไป';
+            }
+        });
+
+        // Function to get selected model
+        function getSelectedModel() {
+            const modelSelect = document.getElementById('modelSelect');
+            return modelSelect ? modelSelect.value : 'llama-3.2-1b'; // default
+        }
+
         // Handle file upload
         function handleFileSelect(event) {
             const file = event.target.files[0];
             if (!file) return;
 
-            if (!file.name.toLowerCase().endsWith('.pdf')) {
-                alert('กรุณาเลือกไฟล์ PDF เท่านั้น');
+            const filename = file.name.toLowerCase();
+            if (!filename.endsWith('.pdf') && !filename.endsWith('.docx')) {
+                alert('กรุณาเลือกไฟล์ PDF หรือ DOCX เท่านั้น');
                 return;
             }
 
@@ -466,7 +582,7 @@
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('เกิดข้อผิดพลาดในการอ่านไฟล์ PDF');
+                alert('เกิดข้อผิดพลาดในการอ่านไฟล์');
             });
         }
 
@@ -485,7 +601,8 @@
             e.preventDefault();
             uploadArea.classList.remove('dragover');
             const file = e.dataTransfer.files[0];
-            if (file && file.name.toLowerCase().endsWith('.pdf')) {
+            const filename = file ? file.name.toLowerCase() : '';
+            if (file && (filename.endsWith('.pdf') || filename.endsWith('.docx'))) {
                 document.getElementById('pdfFile').files = e.dataTransfer.files;
                 handleFileSelect({ target: { files: [file] } });
             }
@@ -530,13 +647,15 @@
             progressInterval = setInterval(updateProgress, 1000);
 
             // เริ่มการวิเคราะห์ (async)
+            const selectedModel = getSelectedModel();
             fetch('/api/analyze-auto', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    resume: resume
+                    resume: resume,
+                    model: selectedModel
                 })
             })
             .then(response => response.json())
@@ -576,13 +695,14 @@
 
             // Validation
             if (!file) {
-                error.textContent = 'กรุณาเลือกไฟล์ PDF';
+                error.textContent = 'กรุณาเลือกไฟล์ PDF หรือ DOCX';
                 error.classList.add('show');
                 return;
             }
 
-            if (!file.name.toLowerCase().endsWith('.pdf')) {
-                error.textContent = 'ไฟล์ต้องเป็น PDF เท่านั้น';
+            const filename = file.name.toLowerCase();
+            if (!filename.endsWith('.pdf') && !filename.endsWith('.docx')) {
+                error.textContent = 'ไฟล์ต้องเป็น PDF หรือ DOCX เท่านั้น';
                 error.classList.add('show');
                 return;
             }
@@ -605,6 +725,8 @@
             // สร้าง FormData
             const formData = new FormData();
             formData.append('file', file);
+            const selectedModel = getSelectedModel();
+            formData.append('model', selectedModel);
 
             // เรียก API upload-and-analyze
             fetch('/api/upload-and-analyze', {
@@ -721,14 +843,46 @@
         }
 
         function displayAutoResults(data) {
+            const personalInfoSection = document.getElementById('personalInfoSection');
             const bestMatchSection = document.getElementById('bestMatchSection');
             const suitableCountSection = document.getElementById('suitableCountSection');
             const suitablePositionsSection = document.getElementById('suitablePositionsSection');
 
             // Clear previous results
+            personalInfoSection.innerHTML = '';
             bestMatchSection.innerHTML = '';
             suitableCountSection.innerHTML = '';
             suitablePositionsSection.innerHTML = '';
+
+            // Show personal info (ดึงจาก root level หรือ best_match หรือ suitable_positions)
+            const fullName = data.full_name || (data.best_match && data.best_match.full_name) || 
+                           (data.suitable_positions && data.suitable_positions.length > 0 && data.suitable_positions[0].full_name) || '';
+            const email = data.email || (data.best_match && data.best_match.email) || 
+                         (data.suitable_positions && data.suitable_positions.length > 0 && data.suitable_positions[0].email) || '';
+            const phone = data.phone || (data.best_match && data.best_match.phone) || 
+                        (data.suitable_positions && data.suitable_positions.length > 0 && data.suitable_positions[0].phone) || '';
+            
+            if (fullName || email || phone) {
+                personalInfoSection.innerHTML = `
+                    <div class="personal-info">
+                        <h3>👤 ข้อมูลผู้สมัคร</h3>
+                        <div class="personal-info-grid">
+                            <div class="personal-info-item">
+                                <strong>ชื่อ-นามสกุล</strong>
+                                <span>${fullName || 'ไม่ระบุ'}</span>
+                            </div>
+                            <div class="personal-info-item">
+                                <strong>อีเมล</strong>
+                                <span>${email || 'ไม่ระบุ'}</span>
+                            </div>
+                            <div class="personal-info-item">
+                                <strong>เบอร์โทรศัพท์</strong>
+                                <span>${phone || 'ไม่ระบุ'}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
 
             // Show count
             if (data.total_suitable > 0) {
